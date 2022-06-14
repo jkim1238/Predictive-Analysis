@@ -1,19 +1,17 @@
 import pymongo.database
-from pymongo import MongoClient
-from dotenv import load_dotenv
-from newspaper import Article
-from pprint import pprint
 import os
 import newspaper
 import en_core_web_lg
+import streamlit as st
+from pymongo import MongoClient
+from newspaper import Article
+from pprint import pprint
 
-# Load .env
-load_dotenv()
 
 # Load the environment variables
-USER = os.getenv('USER')
-PASSWORD = os.getenv('PASSWORD')
-API_KEY = os.getenv('API_KEY')
+USER = st.secrets['USER']
+PASSWORD = st.secrets['PASSWORD']
+API_KEY = st.secrets['API_KEY']
 
 # The mongoDB connection string
 CONNECTION_STRING = f'mongodb+srv://{USER}:{PASSWORD}@cluster0.rjiqa.mongodb.net/?retryWrites=true&w=majority'
