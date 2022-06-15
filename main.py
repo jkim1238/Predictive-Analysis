@@ -1,7 +1,5 @@
-import streamlit as st
 import pandas as pd
 from utils import *
-from datetime import date
 from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 
@@ -14,25 +12,8 @@ def main():
         initial_sidebar_state='expanded'
     )
 
-    # Declare a form to handle a submit button
-    with st.sidebar.form(key='my_form'):
-        # Display form title
-        st.write('Predictive Analysis')
-
-        # Sidebar select box to choose critical technology subfield
-        technology = st.selectbox(
-            label='Select a technology:',
-            options=('-', 'Cloud Computing')
-        )
-
-        # Sidebar select box to choose date
-        select_date = st.date_input(
-            'Select a date:',
-            date(2022, 5, 30)
-        )
-
-        # Submit button
-        submit = st.form_submit_button()
+    # Set sidebar
+    technology, select_date, submit = sidebar()
 
     if not submit or technology == '-':
         # Print title
@@ -118,11 +99,12 @@ def main():
             df = pd.DataFrame(list(companies))
 
         # Sort dataframe by count
-        df.sort_values(
-            by='Count',
-            ascending=False,
-            inplace=True
-        )
+        if not df.empty:
+            df.sort_values(
+                by='Count',
+                ascending=False,
+                inplace=True
+            )
 
         # Display technology title
         st.title(technology)
@@ -133,6 +115,10 @@ def main():
 
         # Grid options
         gb = GridOptionsBuilder.from_dataframe(df)
+        gb.configure_selection(
+            selection_mode="multiple",
+            use_checkbox=True
+        )
         gb.configure_pagination()
         gb.configure_side_bar()
         gb.configure_default_column(
