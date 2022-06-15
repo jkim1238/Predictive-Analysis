@@ -186,7 +186,6 @@ def sidebar():
             'Financial Technologies',
             'Human-Machine Interfaces',
             'Hypersonics',
-            'Networked Sensors and Sensing',
             'Quantum Information Technologies',
             'Renewable Energy Generation and Storage',
             'Semiconductors and Microelectronics',
@@ -197,250 +196,249 @@ def sidebar():
     # Declare a form to handle a submit button
     with st.sidebar.form(key='my_form'):
         # Display select subfield depending on main technology
-        match technology:
-            case '-':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options='-'
+        if technology == '-':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options='-'
+            )
+        elif technology == 'Advanced Computing':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Supercomputing',
+                    'Edge computing',
+                    'Cloud computing',
+                    'Data storage',
+                    'Computing architectures',
+                    'Data processing and analysis techniques'
                 )
-            case 'Advanced Computing':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Supercomputing',
-                        'Edge computing',
-                        'Cloud computing',
-                        'Data storage',
-                        'Computing architectures',
-                        'Data processing and analysis techniques'
-                    )
+            )
+        elif technology == 'Advanced Engineering Materials':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Materials by design and material genomics',
+                    'Materials with new properties',
+                    'Materials with substantial improvements to existing properties'
+                    'Material property characterization and lifecycle assessment'
                 )
-            case 'Advanced Engineering Materials':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Materials by design and material genomics',
-                        'Materials with new properties',
-                        'Materials with substantial improvements to existing properties'
-                        'Material property characterization and lifecycle assessment'
-                    )
+            )
+        elif technology == 'Advanced Gas Turbine Engine Technologies':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Aerospace, maritime, and industrial development and production technologies',
+                    'Full-authority digital engine control, hot-section manufacturing, and associated technologies'
                 )
-            case 'Advanced Gas Turbine Engine Technologies':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Aerospace, maritime, and industrial development and production technologies',
-                        'Full-authority digital engine control, hot-section manufacturing, and associated technologies'
-                    )
+            )
+        elif technology == 'Advanced Manufacturing':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Additive manufacturing',
+                    'Clean, sustainable manufacturing',
+                    'Smart manufacturing',
+                    'Nanomanufacturing'
                 )
-            case 'Advanced Manufacturing':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Additive manufacturing',
-                        'Clean, sustainable manufacturing',
-                        'Smart manufacturing',
-                        'Nanomanufacturing'
-                    )
+            )
+        elif technology == 'Advanced Networked Sensing and Signature Management':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Payloads, sensors, and instruments',
+                    'Sensor processing and data fusion',
+                    'Adaptive optics',
+                    'Remote sensing of the Earth',
+                    'Signature management',
+                    'Nuclear materials detection and characterization',
+                    'Chemical weapons detection and characterization',
+                    'Biological weapons detection and characterization',
+                    'Emerging pathogens detection and characterization',
+                    'Transportation-sector sensing',
+                    'Security-sector sensing',
+                    'Health-sector sensing',
+                    'Energy-sector sensing',
+                    'Building-sector sensing',
+                    'Environmental-sector sensing'
                 )
-            case 'Advanced Networked Sensing and Signature Management':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Payloads, sensors, and instruments',
-                        'Sensor processing and data fusion',
-                        'Adaptive optics',
-                        'Remote sensing of the Earth',
-                        'Signature management',
-                        'Nuclear materials detection and characterization',
-                        'Chemical weapons detection and characterization',
-                        'Biological weapons detection and characterization',
-                        'Emerging pathogens detection and characterization',
-                        'Transportation-sector sensing',
-                        'Security-sector sensing',
-                        'Health-sector sensing',
-                        'Energy-sector sensing',
-                        'Building-sector sensing',
-                        'Environmental-sector sensing'
-                    )
+            )
+        elif technology == 'Advanced Nuclear Energy Technologies':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Nuclear energy systems',
+                    'Fusion energy',
+                    'Space nuclear power and propulsion systems'
                 )
-            case 'Advanced Nuclear Energy Technologies':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Nuclear energy systems',
-                        'Fusion energy',
-                        'Space nuclear power and propulsion systems'
-                    )
+            )
+        elif technology == 'Artificial Intelligence':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Machine learning',
+                    'Deep learning',
+                    'Reinforcement learning',
+                    'Sensory perception and recognition',
+                    'Next-generation AI',
+                    'Planning, reasoning, and decision making',
+                    'Safe and/or secure AI'
                 )
-            case 'Artificial Intelligence':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Machine learning',
-                        'Deep learning',
-                        'Reinforcement learning',
-                        'Sensory perception and recognition',
-                        'Next-generation AI',
-                        'Planning, reasoning, and decision making',
-                        'Safe and/or secure AI'
-                    )
+            )
+        elif technology == 'Autonomous Systems and Robotics':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Surfaces',
+                    'Air',
+                    'Maritime',
+                    'Space'
                 )
-            case 'Autonomous Systems and Robotics':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Surfaces',
-                        'Air',
-                        'Maritime',
-                        'Space'
-                    )
+            )
+        elif technology == 'Biotechnologies':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Nucleic acid and protein synthesis',
+                    'Genome and protein engineering including design tools',
+                    'Multi-omics and other biometrology, bioinformatics, predictive modeling, and analytical tools for functional phenotypes',
+                    'Engineering of multicellular systems',
+                    'Engineering of viral and viral delivery systems',
+                    'Biomanufacturing and bioprocessing technologies'
                 )
-            case 'Biotechnologies':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Nucleic acid and protein synthesis',
-                        'Genome and protein engineering including design tools',
-                        'Multi-omics and other biometrology, bioinformatics, predictive modeling, and analytical tools for functional phenotypes',
-                        'Engineering of multicellular systems',
-                        'Engineering of viral and viral delivery systems',
-                        'Biomanufacturing and bioprocessing technologies'
-                    )
+            )
+        elif technology == 'Communication and Networking Technologies':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Radio-frequency (RF) and mixed-signal circuits, antennas, filters, and components',
+                    'Spectrum management technologies',
+                    'Next-generation wireless networks, including 5G and 6G',
+                    'Optical links and fiber technologies',
+                    'Terrestrial/undersea cables',
+                    'Satellite-based communications',
+                    'Hardware, firmware, and software',
+                    'Communications and network security',
+                    'Mesh networks/infrastructure independent communication technologies'
                 )
-            case 'Communication and Networking Technologies':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Radio-frequency (RF) and mixed-signal circuits, antennas, filters, and components',
-                        'Spectrum management technologies',
-                        'Next-generation wireless networks, including 5G and 6G',
-                        'Optical links and fiber technologies',
-                        'Terrestrial/undersea cables',
-                        'Satellite-based communications',
-                        'Hardware, firmware, and software',
-                        'Communications and network security',
-                        'Mesh networks/infrastructure independent communication technologies'
-                    )
+            )
+        elif technology == 'Directed Energy':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Lasers',
+                    'High-power microwaves',
+                    'Particle beams',
+                    'Optical links and fiber technologies',
+                    'Terrestrial/undersea cables',
+                    'Satellite-based communications',
+                    'Hardware, firmware, and software',
+                    'Communications and network security',
+                    'Mesh networks/infrastructure independent communication technologies'
                 )
-            case 'Directed Energy':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Lasers',
-                        'High-power microwaves',
-                        'Particle beams',
-                        'Optical links and fiber technologies',
-                        'Terrestrial/undersea cables',
-                        'Satellite-based communications',
-                        'Hardware, firmware, and software',
-                        'Communications and network security',
-                        'Mesh networks/infrastructure independent communication technologies'
-                    )
+            )
+        elif technology == 'Financial Technologies':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Distributed ledger technologies',
+                    'Digital assets',
+                    'Digital payment technologies',
+                    'Digital identity infrastructure'
                 )
-            case 'Financial Technologies':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Distributed ledger technologies',
-                        'Digital assets',
-                        'Digital payment technologies',
-                        'Digital identity infrastructure'
-                    )
+            )
+        elif technology == 'Human-Machine Interfaces':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Augmented reality',
+                    'Virtual reality',
+                    'Brain-computer interfaces',
+                    'Human-machine teaming'
                 )
-            case 'Human-Machine Interfaces':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Augmented reality',
-                        'Virtual reality',
-                        'Brain-computer interfaces',
-                        'Human-machine teaming'
-                    )
+            )
+        elif technology == 'Hypersonics':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Propulsion',
+                    'Aerodynamics and control',
+                    'Materials',
+                    'Detection, tracking, and characterization',
+                    'Defense'
                 )
-            case 'Hypersonics':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Propulsion',
-                        'Aerodynamics and control',
-                        'Materials',
-                        'Detection, tracking, and characterization',
-                        'Defense'
-                    )
+            )
+        elif technology == 'Quantum Information Technologies':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Quantum computing',
+                    'Materials, isotopes, and fabrication techniques for quantum devices',
+                    'Post-quantum cryptography',
+                    'Quantum sensing',
+                    'Quantum networking'
                 )
-            case 'Quantum Information Technologies':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Quantum computing',
-                        'Materials, isotopes, and fabrication techniques for quantum devices',
-                        'Post-quantum cryptography',
-                        'Quantum sensing',
-                        'Quantum networking'
-                    )
+            )
+        elif technology == 'Renewable Energy Generation and Storage':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Renewable generation',
+                    'Renewable and sustainable fuels',
+                    'Energy storage',
+                    'Electric and hybrid engines',
+                    'Batteries',
+                    'Grid integration technologies',
+                    'Energy-efficiency technologies'
                 )
-            case 'Renewable Energy Generation and Storage':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Renewable generation',
-                        'Renewable and sustainable fuels',
-                        'Energy storage',
-                        'Electric and hybrid engines',
-                        'Batteries',
-                        'Grid integration technologies',
-                        'Energy-efficiency technologies'
-                    )
+            )
+        elif technology == 'Semiconductors and Microelectronics':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'Design and electronic design automation tools',
+                    'Manufacturing process technologies and manufacturing equipment',
+                    'Beyond complementary metal-oxide-semiconductor (CMOS) technology',
+                    'Heterogeneous integration and advanced packaging',
+                    'Specialized/tailored hardware components for artificial intelligence, natural and hostile '
+                    'radiation environments, RF and optical components, high-power devices, and other critical '
+                    'applications',
+                    'Novel materials for advanced microelectronics',
+                    'Wide-bandgap and ultra-wide-bandgap technologies for power management, distribution, '
+                    'and transmission '
                 )
-            case 'Semiconductors and Microelectronics':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'Design and electronic design automation tools',
-                        'Manufacturing process technologies and manufacturing equipment',
-                        'Beyond complementary metal-oxide-semiconductor (CMOS) technology',
-                        'Heterogeneous integration and advanced packaging',
-                        'Specialized/tailored hardware components for artificial intelligence, natural and hostile '
-                        'radiation environments, RF and optical components, high-power devices, and other critical '
-                        'applications',
-                        'Novel materials for advanced microelectronics',
-                        'Wide-bandgap and ultra-wide-bandgap technologies for power management, distribution, '
-                        'and transmission '
-                    )
+            )
+        elif technology == 'Space Technologies and Systems':
+            subfield = st.selectbox(
+                label='Select a subfield:',
+                options=(
+                    '-',
+                    'On-orbit servicing, assembly, and manufacturing',
+                    'Commoditized satellite buses',
+                    'Low-cost launch vehicles',
+                    'Sensors for local and wide-field imaging',
+                    'Space propulsion',
+                    'Resilient positioning, navigation, and timing (PNT)',
+                    'Cryogenic fluid management',
+                    'Entry, descent, and landing'
                 )
-            case 'Space Technologies and Systems':
-                subfield = st.selectbox(
-                    label='Select a subfield:',
-                    options=(
-                        '-',
-                        'On-orbit servicing, assembly, and manufacturing',
-                        'Commoditized satellite buses',
-                        'Low-cost launch vehicles',
-                        'Sensors for local and wide-field imaging',
-                        'Space propulsion',
-                        'Resilient positioning, navigation, and timing (PNT)',
-                        'Cryogenic fluid management',
-                        'Entry, descent, and landing'
-                    )
-                )
+            )
 
         # Sidebar select box to choose date
         select_date = st.date_input(
