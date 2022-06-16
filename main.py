@@ -111,7 +111,7 @@ def main():
                 # Convert dictionary to list
                 companies_list = dictionary_to_list(companies)
 
-                # TODO Store companies in the database
+                # Store companies in the database
                 store_documents(
                     documents=companies_list,
                     collection_name=f'{collection_name}_prediction'

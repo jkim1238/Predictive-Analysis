@@ -47,8 +47,8 @@ def init_connection() -> pymongo.database.Database:
 db = init_connection()
 
 
-# @st.experimental_memo(ttl=600)
-def get_collection(collection_name: str) -> pymongo.cursor.Cursor:
+@st.experimental_memo(ttl=600)
+def get_collection(collection_name: str) -> list:
     """This function retrieves the collection from mongoDB Atlas database based on date and technology.
 
     :param collection_name: The name of the collection.
@@ -57,6 +57,9 @@ def get_collection(collection_name: str) -> pymongo.cursor.Cursor:
 
     # Get collection
     collection = db[collection_name].find({}, {'_id': False})
+
+    # Convert to list to make hashable for st.experimental_memo
+    collection = list(collection)
 
     return collection
 
