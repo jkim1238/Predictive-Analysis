@@ -2,6 +2,7 @@ import pymongo.database
 import newspaper
 import en_core_web_lg
 import streamlit as st
+from random import randint
 from pymongo import MongoClient
 from newspaper import Article
 from pprint import pprint
@@ -11,7 +12,9 @@ from newscatcherapi import NewsCatcherApiClient
 # Load the environment variables
 USER = st.secrets['USER']
 PASSWORD = st.secrets['PASSWORD']
-API_KEY = st.secrets['API_KEY']
+
+# Random API key for newscatcherapi free trial
+API_KEY = st.secrets[f'API_KEY{randint(1, 4)}']
 
 # The mongoDB connection string
 CONNECTION_STRING = f'mongodb+srv://{USER}:{PASSWORD}@cluster0.rjiqa.mongodb.net/?retryWrites=true&w=majority'
