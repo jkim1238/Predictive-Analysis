@@ -1,7 +1,9 @@
 import pandas as pd
+
 from utils import *
 from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
+from st_aggrid.shared import GridUpdateMode, DataReturnMode
 
 
 def main():
@@ -12,10 +14,22 @@ def main():
         initial_sidebar_state='expanded'
     )
 
-    # Set sidebar
-    technology, select_date, submit = sidebar()
+    # Initialization of session state variables
+    if 'technology' not in st.session_state:
+        st.session_state['technology'] = '-'
+    if 'df' not in st.session_state:
+        st.session_state['df'] = None
+    if 'selected_df' not in st.session_state:
+        st.session_state['selected_df'] = None
+    if 'df_tech' not in st.session_state:
+        st.session_state['df_tech'] = None
+    if 'articles_count' not in st.session_state:
+        st.session_state['articles_count'] = None
 
-    if not submit or technology == '-':
+    # Set sidebar
+    st.session_state['technology'], select_date = set_sidebar()
+
+    if st.session_state['technology'] == '-':
         # Print title
         st.title(
             body='❓ AL - CFIUS Over the Horizon Forecasting for Critical and Emerging Technologies',
@@ -52,71 +66,108 @@ def main():
 
         # Print instructions
         st.write("""
-           Select a technology and date from the sidebar.
+           Select a technology, subfield, and date from the sidebar.
         """)
     else:
-        # Get 'ARLIS' mongoDB database
-        db = get_database()
-
-        # Check if there was a previous prediction
-        companies, companies_count = get_collection(
-            database=db,
-            date=select_date,
-            technology=f'{technology}_prediction'
-        )
-
-        # Get articles and count from mongoDB collection
-        articles, articles_count = get_collection(
-            database=db,
-            date=select_date,
-            technology=technology
-        )
-
-        # If there wasn't a previous prediction, calculate new prediction
-        if not companies:
-            # Get company names using Name Entity Recognition and perform Sentiment Analysis on article text
-            companies = natural_language_processing(articles=articles)
-
-            # Convert dictionary to list
-            companies_list = dictionary_to_list(companies)
-
-            # TODO Store companies in the database
-            # store_documents(database=db, document=companies_list, date=select_date, technology=technology)
-
-            # Convert dictionary to pandas dataframe
-            df = pd.concat({k: pd.DataFrame.from_dict(v, 'index') for k, v in companies.items()}, axis=0).reset_index()
-
-            # Drop empty columns
-            df.drop(
-                columns=['level_1'],
-                inplace=True
-            )
-
-            # Rename columns
-            df.columns = ['Name', 'Count']
-        else:
-            # Convert cursor to dataframe
-            df = pd.DataFrame(list(companies))
-
-        # Sort dataframe by count
-        if not df.empty:
-            df.sort_values(
-                by='Count',
-                ascending=False,
-                inplace=True
-            )
-
         # Display technology title
-        st.title(technology)
+        st.title(st.session_state['technology'])
+
+        # Convert datetime object to date string
+        date_string = select_date.strftime('%Y%m%d')
+
+        # Make technology lowercase
+        technology_string = st.session_state["technology"].lower()
+
+        # Replace spaces with underscore
+        technology_string = technology_string.replace(' ', '_')
+
+        if st.session_state['df_tech'] != st.session_state['technology']:
+            # Clear page
+            st.empty()
+            st.empty()
+            st.empty()
+            st.empty()
+            st.empty()
+
+            # Get 'ARLIS' mongoDB database
+            db = get_database()
+
+            # Get articles and count from mongoDB collection
+            articles, st.session_state["articles_count"] = get_collection(
+                database=db,
+                date=select_date,
+                technology=st.session_state['technology']
+            )
+
+            # If there wasn't any previous articles in the database, use newscatcherapi and store in mongoDB Atlas
+            # database
+            if f'{date_string}_{technology_string}' not in db.list_collection_names():
+                articles, st.session_state["articles_count"] = consume_api(
+                    database=db,
+                    date=select_date,
+                    technology=st.session_state['technology']
+                )
+
+            # If there wasn't a previous prediction, calculate new prediction
+            if f'{date_string}_{technology_string}_prediction' not in db.list_collection_names():
+                with st.spinner('Please wait...'):
+                    # Get company names using Name Entity Recognition and perform Sentiment Analysis on article text
+                    companies = natural_language_processing(articles=articles)
+
+                # Convert dictionary to list
+                companies_list = dictionary_to_list(companies)
+
+                # TODO Store companies in the database
+                store_documents(
+                    database=db,
+                    document=companies_list,
+                    date=select_date,
+                    technology=st.session_state["technology"]
+                )
+
+                # Convert dictionary to pandas dataframe
+                df = pd.concat({k: pd.DataFrame.from_dict(v, 'index') for k, v in companies.items()}, axis=0).reset_index()
+
+                # Drop empty columns
+                df.drop(
+                    columns=['level_1'],
+                    inplace=True
+                )
+
+                # Rename columns
+                df.columns = ['Name', 'Count']
+            else:
+                # Check if there was a previous prediction
+                companies, companies_count = get_collection(
+                    database=db,
+                    date=select_date,
+                    technology=f'{st.session_state["technology"]}_prediction'
+                )
+
+                # Convert cursor to dataframe
+                df = pd.DataFrame(list(companies))
+
+            # Sort dataframe by count
+            if not df.empty:
+                df.sort_values(
+                    by='Count',
+                    ascending=False,
+                    inplace=True
+                )
+
+            # Set session state
+            st.session_state['df_tech'] = st.session_state['technology']
+            st.session_state['df'] = df
 
         # Display statistics
-        st.write(f'There are {articles_count} articles on {technology} on {select_date.strftime("%Y/%m/%d")}.\n'
-                 f'Found {companies_count} companies total.')
+        st.write(
+            f'There are {st.session_state["articles_count"]} articles on {st.session_state["technology"]} on {select_date.strftime("%Y/%m/%d")}.\n'
+            f'Found {len(st.session_state["df"])} companies total.')
 
         # Grid options
-        gb = GridOptionsBuilder.from_dataframe(df)
+        gb = GridOptionsBuilder.from_dataframe(st.session_state['df'])
         gb.configure_selection(
-            selection_mode="multiple",
+            selection_mode='multiple',
             use_checkbox=True
         )
         gb.configure_pagination()
@@ -125,17 +176,42 @@ def main():
             groupable=True,
             value=True,
             enableRowGroup=True,
-            aggFunc="sum",
+            aggFunc='sum',
             editable=True
         )
         gridOptions = gb.build()
 
         # Display dataframe
-        AgGrid(
-            dataframe=df,
+        selected_data = AgGrid(
+            dataframe=st.session_state['df'],
             gridOptions=gridOptions,
-            enable_enterprise_modules=True
+            enable_enterprise_modules=True,
+            data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
+            update_mode=GridUpdateMode.MODEL_CHANGED
         )
+
+        # Convert selected rows as dataframe
+        st.session_state['selected_df'] = pd.DataFrame(selected_data['selected_rows'])
+
+        # Set 2 columns for the options.
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Save all raw data button to save DataFrame as CSV file.
+            st.download_button(
+                label='Download All Data',
+                data=st.session_state['df'].to_csv(),
+                file_name=f'{date_string}_{technology_string}.csv',
+                mime='text/csv'
+            )
+        with col2:
+            # Save selected raw data button to save DataFrame as CSV file.
+            st.download_button(
+                label='Download Selected Data',
+                data=st.session_state['selected_df'].to_csv(),
+                file_name=f'{date_string}_{technology_string}.csv',
+                mime='text/csv'
+            )
 
 
 if __name__ == '__main__':

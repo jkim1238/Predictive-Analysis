@@ -5,7 +5,8 @@ import streamlit as st
 from pymongo import MongoClient
 from newspaper import Article
 from pprint import pprint
-from datetime import date
+from datetime import date, timedelta, datetime
+from newscatcherapi import NewsCatcherApiClient
 
 # Load the environment variables
 USER = st.secrets['USER']
@@ -54,7 +55,70 @@ def get_collection(database: pymongo.database.Database = None, date: str = None,
     collection_name = f'{date_string}_{technology}'
 
     # Get collection
-    collection = database[collection_name].find()
+    collection = database[collection_name].find({}, {'_id': False})
+
+    # Get collection count
+    collection_count = database[collection_name].count_documents({})
+
+    return collection, collection_count
+
+
+def consume_api(database: pymongo.database.Database = None, date: str = None,
+                technology: str = None) -> (pymongo.cursor.Cursor, int):
+    """This function consumes the newscatcherapi and stores in the mongoDB Atlas database.
+
+        :param database: The mongoDB Atlas database.
+        :param date: The date.
+        :param technology: The technology.
+        :return: The articles mongoDB Atlas collection.
+    """
+
+    # The dates
+    from_ = date
+    to_ = date + timedelta(days=1)
+
+    # Convert dates to string
+    from_ = from_.strftime('%Y/%m/%d')
+    to_ = to_.strftime('%Y/%m/%d')
+
+    # Make technology lowercase
+    technology = technology.lower()
+
+    # The newscatcherapi object
+    newscatcherapi = NewsCatcherApiClient(x_api_key=API_KEY)
+
+    # Get all articles
+    all_articles = newscatcherapi.get_search_all_pages(
+        q=technology,
+        lang='en',
+        page_size=100,
+        from_=from_,
+        to_=to_
+    )
+
+    # Get articles list
+    articles = all_articles['articles']
+
+    # Get articles count
+    articles_count = len(articles)
+
+    # Convert date
+    date_string = datetime.strptime(from_, '%Y/%m/%d').date().strftime('%Y%m%d')
+
+    # Replace spaces with underscore
+    technology = technology.replace(' ', '_')
+
+    # Create collection name based on date
+    collection_name = database[f'{date_string}_{technology}']
+
+    # Insert all articles
+    try:
+        collection_name.insert_many(articles, ordered=False)
+    except pymongo.errors.BulkWriteError as e:
+        pass
+
+    # Get collection
+    collection = database[collection_name].find({}, {'_id': False})
 
     # Get collection count
     collection_count = database[collection_name].count_documents({})
@@ -79,7 +143,7 @@ def dictionary_to_list(dictionary: dict = None) -> list:
     return companies_list
 
 
-def store_documents(database: pymongo.database.Database = None, document: dict = None, date: str = None,
+def store_documents(database: pymongo.database.Database = None, document: list = None, date: str = None,
                     technology: str = None) -> None:
     """This function inserts a prediction as a document in mongoDB Atlas database.
 
@@ -158,7 +222,7 @@ def count_companies(companies: dict = None, text: str = None) -> dict:
     return companies
 
 
-def sidebar():
+def set_sidebar():
     """This function creates the sidebar.
 
     :return: The technology, date, and if submitted.
@@ -449,7 +513,7 @@ def sidebar():
         # Submit button
         submit = st.form_submit_button()
 
-    return subfield, select_date, submit
+    return subfield, select_date
 
 
 # TODO return
@@ -458,7 +522,7 @@ def natural_language_processing(articles: pymongo.cursor.Cursor = None) -> dict:
     companies = {}
 
     # TODO testing
-    articles = articles[:1]
+    # articles = articles[:50]
 
     for article in articles:
         # Get url
