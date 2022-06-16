@@ -14,7 +14,7 @@ USER = st.secrets['USER']
 PASSWORD = st.secrets['PASSWORD']
 
 # Random API key for newscatcherapi free trial
-API_KEY = st.secrets[f'API_KEY{randint(1, 4)}']
+API_KEY = st.secrets[f'API_KEY{randint(1, 3)}']
 
 # The mongoDB connection string
 CONNECTION_STRING = f'mongodb+srv://{USER}:{PASSWORD}@cluster0.rjiqa.mongodb.net/?retryWrites=true&w=majority'
