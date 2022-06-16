@@ -99,21 +99,21 @@ def consume_api(database: pymongo.database.Database = None, date: str = None,
     # Get articles list
     articles = all_articles['articles']
 
-    # Get articles count
-    articles_count = len(articles)
-
     # Convert date
     date_string = datetime.strptime(from_, '%Y/%m/%d').date().strftime('%Y%m%d')
 
     # Replace spaces with underscore
     technology = technology.replace(' ', '_')
 
+    # The collection name
+    collection_name = f'{date_string}_{technology}'
+
     # Create collection name based on date
-    collection_name = database[f'{date_string}_{technology}']
+    collection = database[f'{date_string}_{technology}']
 
     # Insert all articles
     try:
-        collection_name.insert_many(articles, ordered=False)
+        collection.insert_many(articles, ordered=False)
     except pymongo.errors.BulkWriteError as e:
         pass
 
@@ -506,8 +506,7 @@ def set_sidebar():
 
         # Sidebar select box to choose date
         select_date = st.date_input(
-            'Select a date:',
-            date(2022, 5, 30)
+            'Select a date:'
         )
 
         # Submit button
