@@ -25,6 +25,8 @@ def main():
         st.session_state['df_tech'] = None
     if 'articles_count' not in st.session_state:
         st.session_state['articles_count'] = None
+    if 'date' not in st.session_state:
+        st.session_state['date'] = None
 
     # Set sidebar
     st.session_state['technology'], select_date = set_sidebar()
@@ -81,7 +83,7 @@ def main():
         # Replace spaces with underscore
         technology_string = technology_string.replace(' ', '_')
 
-        if st.session_state['df_tech'] != st.session_state['technology']:
+        if st.session_state['df_tech'] != st.session_state['technology'] or st.session_state['date'] != date_string:
             # Clear page
             st.empty()
             st.empty()
@@ -158,6 +160,7 @@ def main():
             # Set session state
             st.session_state['df_tech'] = st.session_state['technology']
             st.session_state['df'] = df
+            st.session_state['date'] = date_string
 
         # Display statistics
         st.write(
