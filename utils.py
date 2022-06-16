@@ -16,61 +16,67 @@ PASSWORD = st.secrets['PASSWORD']
 # Random API key for newscatcherapi free trial
 API_KEY = st.secrets[f'API_KEY{randint(1, 3)}']
 
-# The mongoDB connection string
-CONNECTION_STRING = f'mongodb+srv://{USER}:{PASSWORD}@cluster0.rjiqa.mongodb.net/?retryWrites=true&w=majority'
+# Set page config
+st.set_page_config(
+    page_title="Predictive Analysis",
+    page_icon="❓",
+    initial_sidebar_state='expanded'
+)
 
 
-def get_database() -> pymongo.database.Database:
-    """This function retrieves the mongoDB Atlas database.
+@st.experimental_singleton
+def init_connection() -> pymongo.database.Database:
+    """This function connects to the mongoDB Atlas client.
 
-    :return: The database.
+    :return: The client.
     """
 
-    # Create a connection using MongoClient
-    client = MongoClient(CONNECTION_STRING)
+    # The mongoDB connection string
+    connection_string = f'mongodb+srv://{USER}:{PASSWORD}@cluster0.rjiqa.mongodb.net/?retryWrites=true&w=majority'
 
-    # Get ARLIS database
-    db = client['ARLIS']
+    # Connect to the client
+    client = MongoClient(connection_string)
 
-    return db
+    # Get database
+    database = client['ARLIS']
+
+    return database
 
 
-def get_collection(database: pymongo.database.Database = None, date: str = None,
-                   technology: str = None) -> (pymongo.cursor.Cursor, int):
+# Get 'ARLIS' mongoDB database
+db = init_connection()
+
+
+# @st.experimental_memo(ttl=600)
+def get_collection(collection_name: str) -> pymongo.cursor.Cursor:
     """This function retrieves the collection from mongoDB Atlas database based on date and technology.
 
-    :param database: The mongoDB Atlas database.
-    :param date: The date.
-    :param technology: The technology.
-    :return: The articles mongoDB Atlas collection.
+    :param collection_name: The name of the collection.
+    :return: The collection from mongoDB Atlas database.
     """
 
-    # Convert datetime object to date string
-    date_string = date.strftime('%Y%m%d')
-
-    # Make technology lowercase
-    technology = technology.lower()
-
-    # Replace spaces with underscore
-    technology = technology.replace(' ', '_')
-
-    # The collection name
-    collection_name = f'{date_string}_{technology}'
-
     # Get collection
-    collection = database[collection_name].find({}, {'_id': False})
+    collection = db[collection_name].find({}, {'_id': False})
 
-    # Get collection count
-    collection_count = database[collection_name].count_documents({})
-
-    return collection, collection_count
+    return collection
 
 
-def consume_api(database: pymongo.database.Database = None, date: str = None,
-                technology: str = None) -> (pymongo.cursor.Cursor, int):
+def count_documents(collection_name: str) -> int:
+    """This function counts the number of documents in a collection.
+
+    :param collection_name: The name of the collection.
+    :return: The number of documents.
+    """
+
+    # Count the number of documents
+    count = db[collection_name].count_documents({})
+
+    return count
+
+
+def consume_api(date: datetime.date, technology: str) -> (pymongo.cursor.Cursor, int):
     """This function consumes the newscatcherapi and stores in the mongoDB Atlas database.
 
-        :param database: The mongoDB Atlas database.
         :param date: The date.
         :param technology: The technology.
         :return: The articles mongoDB Atlas collection.
@@ -111,25 +117,18 @@ def consume_api(database: pymongo.database.Database = None, date: str = None,
     # The collection name
     collection_name = f'{date_string}_{technology}'
 
-    # Create collection name based on date
-    collection = database[f'{date_string}_{technology}']
-
-    # Insert all articles
-    try:
-        collection.insert_many(articles, ordered=False)
-    except pymongo.errors.BulkWriteError as e:
-        pass
+    # Insert articles in database to save time
+    store_documents(documents=articles, collection_name=collection_name)
 
     # Get collection
-    collection = database[collection_name].find({}, {'_id': False})
+    collection = get_collection(collection_name=collection_name)
 
-    # Get collection count
-    collection_count = database[collection_name].count_documents({})
+    collection_count = count_documents(collection_name=collection_name)
 
     return collection, collection_count
 
 
-def dictionary_to_list(dictionary: dict = None) -> list:
+def dictionary_to_list(dictionary: dict) -> list:
     """This function converts the dictionary of companies to a list of companies.
 
     :param dictionary: The dictionary.
@@ -146,36 +145,24 @@ def dictionary_to_list(dictionary: dict = None) -> list:
     return companies_list
 
 
-def store_documents(database: pymongo.database.Database = None, document: list = None, date: str = None,
-                    technology: str = None) -> None:
+def store_documents(documents: list, collection_name: str) -> None:
     """This function inserts a prediction as a document in mongoDB Atlas database.
 
-    :param database: The mongoDB Atlas database.
-    :param document: The document.
-    :param date: The date.
-    :param technology: The technology.
+    :param documents: The document.
+    :param collection_name: The name of the collection.
     """
 
-    # Convert datetime object to date string
-    date_string = date.strftime('%Y%m%d')
-
-    # Make technology lowercase
-    technology = technology.lower()
-
-    # Replace spaces with underscore
-    technology = technology.replace(' ', '_')
-
-    # The collection name
-    collection_name = f'{date_string}_{technology}_prediction'
-
     # Get collection
-    collection = database[collection_name]
+    collection = db[collection_name]
 
-    # Insert document
-    collection.insert_many(documents=document)
+    # Insert documents
+    try:
+        collection.insert_many(documents=documents)
+    except pymongo.errors.BulkWriteError as e:
+        pass
 
 
-def get_article_text(url: str = None) -> str:
+def get_article_text(url: str) -> str:
     """This function gets the article text.
 
     :param url: The article url.
@@ -197,7 +184,7 @@ def get_article_text(url: str = None) -> str:
     return text
 
 
-def count_companies(companies: dict = None, text: str = None) -> dict:
+def count_companies(companies: dict, text: str) -> dict:
     """This function counts the number of time a company appears in an article using Name Entity Recognition.
 
     :param companies: The dictionary of companies.
@@ -519,7 +506,7 @@ def set_sidebar():
 
 
 # TODO return
-def natural_language_processing(articles: pymongo.cursor.Cursor = None) -> dict:
+def natural_language_processing(articles: pymongo.cursor.Cursor) -> dict:
     # The companies list
     companies = {}
 

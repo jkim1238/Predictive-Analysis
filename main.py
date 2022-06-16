@@ -7,13 +7,6 @@ from st_aggrid.shared import GridUpdateMode, DataReturnMode
 
 
 def main():
-    # Set page config
-    st.set_page_config(
-        page_title="Predictive Analysis",
-        page_icon="❓",
-        initial_sidebar_state='expanded'
-    )
-
     # Initialization of session state variables
     if 'technology' not in st.session_state:
         st.session_state['technology'] = '-'
@@ -78,10 +71,13 @@ def main():
         date_string = select_date.strftime('%Y%m%d')
 
         # Make technology lowercase
-        technology_string = st.session_state["technology"].lower()
+        technology_string = st.session_state['technology'].lower()
 
         # Replace spaces with underscore
         technology_string = technology_string.replace(' ', '_')
+
+        # The collection name
+        collection_name = f'{date_string}_{technology_string}'
 
         if st.session_state['df_tech'] != st.session_state['technology'] or st.session_state['date'] != date_string:
             # Clear page
@@ -91,27 +87,23 @@ def main():
             st.empty()
             st.empty()
 
-            # Get 'ARLIS' mongoDB database
-            db = get_database()
+            # Get articles from mongoDB collection
+            articles = get_collection(collection_name=collection_name)
 
-            # Get articles and count from mongoDB collection
-            articles, st.session_state["articles_count"] = get_collection(
-                database=db,
-                date=select_date,
-                technology=st.session_state['technology']
-            )
+            # Get articles count
+            st.session_state['articles_count'] = count_documents(collection_name=collection_name)
 
             # If there wasn't any previous articles in the database, use newscatcherapi and store in mongoDB Atlas
             # database
-            if f'{date_string}_{technology_string}' not in db.list_collection_names():
-                articles, st.session_state["articles_count"] = consume_api(
-                    database=db,
+            if f'{collection_name}' not in db.list_collection_names():
+                # Get articles
+                articles, st.session_state['articles_count'] = consume_api(
                     date=select_date,
                     technology=st.session_state['technology']
                 )
 
             # If there wasn't a previous prediction, calculate new prediction
-            if f'{date_string}_{technology_string}_prediction' not in db.list_collection_names():
+            if f'{collection_name}_prediction' not in db.list_collection_names():
                 with st.spinner('Please wait...'):
                     # Get company names using Name Entity Recognition and perform Sentiment Analysis on article text
                     companies = natural_language_processing(articles=articles)
@@ -121,14 +113,13 @@ def main():
 
                 # TODO Store companies in the database
                 store_documents(
-                    database=db,
-                    document=companies_list,
-                    date=select_date,
-                    technology=st.session_state["technology"]
+                    documents=companies_list,
+                    collection_name=f'{collection_name}_prediction'
                 )
 
                 # Convert dictionary to pandas dataframe
-                df = pd.concat({k: pd.DataFrame.from_dict(v, 'index') for k, v in companies.items()}, axis=0).reset_index()
+                df = pd.concat({k: pd.DataFrame.from_dict(v, 'index') for k, v in companies.items()},
+                               axis=0).reset_index()
 
                 # Drop empty columns
                 df.drop(
@@ -140,11 +131,7 @@ def main():
                 df.columns = ['Name', 'Count']
             else:
                 # Check if there was a previous prediction
-                companies, companies_count = get_collection(
-                    database=db,
-                    date=select_date,
-                    technology=f'{st.session_state["technology"]}_prediction'
-                )
+                companies = get_collection(collection_name=f'{collection_name}_prediction')
 
                 # Convert cursor to dataframe
                 df = pd.DataFrame(list(companies))
